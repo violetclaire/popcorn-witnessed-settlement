@@ -1,0 +1,49 @@
+{
+  "witness_receipt": {
+    "receipt_id": "pwr_24a140e0651c67375cdfb34bc1c38b47",
+    "node_id": "767-2676.com",
+    "protocol_id": "POPCORN-WITNESS/1.0",
+    "request_received_at_utc": "2026-08-31T05:02:15.168Z",
+    "witnessed_at_utc": "2026-08-31T05:02:16.007Z",
+    "statement_created_at_utc": "2026-08-31T05:02:16.007Z",
+    "unix_time_milliseconds": 1788152536007,
+    "clock_accuracy_radius_ms": 10000,
+    "witness_window_utc": {
+      "earliest": "2026-08-31T05:02:06.007Z",
+      "latest": "2026-08-31T05:02:26.007Z"
+    },
+    "server_processing_duration_ms": 839,
+    "post_witness_processing_duration_ms": 0,
+    "commitment": {
+      "payload_digest": {
+        "algorithm": "sha-256",
+        "value": "UKwdgKFq4m5a1Mm0qMSuhIJYnJ8jdmNd01uFdHaAE-M"
+      },
+      "nonce": "V1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1c",
+      "previous_attestation_digest": null
+    },
+    "payment_identifier": "eip3009_4489ca2e5c967e9cf3d1742a8e4b3f7153f3b11921e43af0e31cdc9e35410165",
+    "payment_transaction": "0x8dfce272b223179adc3b68256ebf03a27721fb7b708c0e50f47753e6c33bab0c",
+    "evidence_scope": {
+      "type": "payload_commitment_witness",
+      "payload_disclosed": false,
+      "caller_identity_proven": false,
+      "recipient_delivery_proven": false,
+      "action_execution_proven": false,
+      "nonce_uniqueness_enforced": false,
+      "replay_prevented": false,
+      "authorization_granted": false,
+      "external_atomic_clock_alignment_proven": false,
+      "clock_accuracy_independently_verified": false,
+      "payer_authorization_bound_to_commitment": false
+    }
+  },
+  "witness_attestation": {
+    "format": "JWS",
+    "algorithm": "ES256",
+    "key_id": "popcorn-witness-2026-01",
+    "key_set": "/.well-known/popcorn-keys.json",
+    "compact_jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6InBvcGNvcm4td2l0bmVzcy0yMDI2LTAxIiwidHlwIjoicG9wY29ybi13aXRuZXNzK2p3cyJ9.eyJyZWNlaXB0X2lkIjoicHdyXzI0YTE0MGUwNjUxYzY3Mzc1Y2RmYjM0YmMxYzM4YjQ3Iiwibm9kZV9pZCI6Ijc2Ny0yNjc2LmNvbSIsInByb3RvY29sX2lkIjoiUE9QQ09STi1XSVRORVNTLzEuMCIsInJlcXVlc3RfcmVjZWl2ZWRfYXRfdXRjIjoiMjAyNi0wOC0zMVQwNTowMjoxNS4xNjhaIiwid2l0bmVzc2VkX2F0X3V0YyI6IjIwMjYtMDgtMzFUMDU6MDI6MTYuMDA3WiIsInN0YXRlbWVudF9jcmVhdGVkX2F0X3V0YyI6IjIwMjYtMDgtMzFUMDU6MDI6MTYuMDA3WiIsInVuaXhfdGltZV9taWxsaXNlY29uZHMiOjE3ODgxNTI1MzYwMDcsImNsb2NrX2FjY3VyYWN5X3JhZGl1c19tcyI6MTAwMDAsIndpdG5lc3Nfd2luZG93X3V0YyI6eyJlYXJsaWVzdCI6IjIwMjYtMDgtMzFUMDU6MDI6MDYuMDA3WiIsImxhdGVzdCI6IjIwMjYtMDgtMzFUMDU6MDI6MjYuMDA3WiJ9LCJzZXJ2ZXJfcHJvY2Vzc2luZ19kdXJhdGlvbl9tcyI6ODM5LCJwb3N0X3dpdG5lc3NfcHJvY2Vzc2luZ19kdXJhdGlvbl9tcyI6MCwiY29tbWl0bWVudCI6eyJwYXlsb2FkX2RpZ2VzdCI6eyJhbGdvcml0aG0iOiJzaGEtMjU2IiwidmFsdWUiOiJVS3dkZ0tGcTRtNWExTW0wcU1TdWhJSlluSjhqZG1OZDAxdUZkSGFBRS1NIn0sIm5vbmNlIjoiVjFkWFYxZFhWMWRYVjFkWFYxZFhWMWRYVjFkWFYxZFhWMWRYVjFkWFYxYyIsInByZXZpb3VzX2F0dGVzdGF0aW9uX2RpZ2VzdCI6bnVsbH0sInBheW1lbnRfaWRlbnRpZmllciI6ImVpcDMwMDlfNDQ4OWNhMmU1Yzk2N2U5Y2YzZDE3NDJhOGU0YjNmNzE1M2YzYjExOTIxZTQzYWYwZTMxY2RjOWUzNTQxMDE2NSIsInBheW1lbnRfdHJhbnNhY3Rpb24iOiIweDhkZmNlMjcyYjIyMzE3OWFkYzNiNjgyNTZlYmYwM2EyNzcyMWZiN2I3MDhjMGU1MGY0Nzc1M2U2YzMzYmFiMGMiLCJldmlkZW5jZV9zY29wZSI6eyJ0eXBlIjoicGF5bG9hZF9jb21taXRtZW50X3dpdG5lc3MiLCJwYXlsb2FkX2Rpc2Nsb3NlZCI6ZmFsc2UsImNhbGxlcl9pZGVudGl0eV9wcm92ZW4iOmZhbHNlLCJyZWNpcGllbnRfZGVsaXZlcnlfcHJvdmVuIjpmYWxzZSwiYWN0aW9uX2V4ZWN1dGlvbl9wcm92ZW4iOmZhbHNlLCJub25jZV91bmlxdWVuZXNzX2VuZm9yY2VkIjpmYWxzZSwicmVwbGF5X3ByZXZlbnRlZCI6ZmFsc2UsImF1dGhvcml6YXRpb25fZ3JhbnRlZCI6ZmFsc2UsImV4dGVybmFsX2F0b21pY19jbG9ja19hbGlnbm1lbnRfcHJvdmVuIjpmYWxzZSwiY2xvY2tfYWNjdXJhY3lfaW5kZXBlbmRlbnRseV92ZXJpZmllZCI6ZmFsc2UsInBheWVyX2F1dGhvcml6YXRpb25fYm91bmRfdG9fY29tbWl0bWVudCI6ZmFsc2V9fQ.5zEWJNTTdoNLwgvSi_vFY8F-FvHlLjqnYuJEy4MvLZgsHQAJeABVqn7VkE3CCBpJ08a1bOJXwTmh9K6NGfXyng"
+  },
+  "payment_status": "settled"
+}
