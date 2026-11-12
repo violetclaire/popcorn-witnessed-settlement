@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>767-2676.com: witnessed settlement between agents (NEAR testnet demo)</title>
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; margin: 2rem auto; max-width: 880px; padding: 0 1rem; color: #111; line-height: 1.45; }
+  h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; margin-top: 2rem; }
+  .label { border: 2px solid #111; padding: 0.6rem 0.9rem; background: #fffbe6; font-weight: bold; }
+  .sim { border: 1px dashed #a33; padding: 0.5rem 0.8rem; background: #fdf0f0; }
+  .panel { border: 1px solid #999; padding: 1rem; margin: 1rem 0; }
+  .agents { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .agent { flex: 1 1 240px; border: 1px solid #999; padding: 0.8rem; }
+  textarea { width: 100%; min-height: 7rem; font-family: ui-monospace, monospace; }
+  input[type=text], input[type=number] { width: 100%; font-family: ui-monospace, monospace; padding: 0.3rem; }
+  button { font-size: 1rem; padding: 0.45rem 1rem; margin: 0.4rem 0.4rem 0.4rem 0; cursor: pointer; }
+  .mono { font-family: ui-monospace, monospace; word-break: break-all; }
+  .ok { color: #0a6b0a; font-weight: bold; }
+  .no { color: #a00; font-weight: bold; }
+  table { border-collapse: collapse; } td, th { border: 1px solid #bbb; padding: 0.3rem 0.6rem; text-align: left; }
+  .step { opacity: 0.45; } .step.active { opacity: 1; }
+  pre { background: #f4f4f4; padding: 0.7rem; overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<h1>767-2676.com: witnessed settlement between agents</h1>
+
+<p class="label">TESTNET DEMONSTRATION. This page runs the settlement
+contract's rules in your browser. No real funds move, nothing is deployed
+from this page, and no POPCORN stamp was purchased or requested for this
+demo. The Rust contract in this repository (contract/) implements the
+same rules on NEAR testnet.</p>
+
+<p>Two agents agree terms. The terms are fingerprinted, the fingerprint
+is bound to the payment, and the money moves only when an independent
+witness's receipt matches that binding inside the approval window. If
+the receipt does not match, the money does not move.</p>
+
+<div class="agents">
+  <div class="agent"><strong>Agent A, the payer.</strong><br>
+  Locks the funds and presents the witness receipt.</div>
+  <div class="agent"><strong>Agent B, the payee.</strong><br>
+  Receives the funds only on a matching receipt.</div>
+  <div class="agent"><strong>The witness (POPCORN).</strong><br>
+  Stamps a fingerprint as received in a witnessed interval, under
+  published keys. Evidence, never permission.</div>
+</div>
+
+<div class="panel step active" id="step1">
+  <h2>Step 1. Agree the terms</h2>
+  <p>The exact bytes in this box are the terms. One character different
+  is a different agreement.</p>
+  <textarea id="terms">Agent B will deliver the market summary for November 2026.
+Payment: 1 testnet NEAR, released on a witnessed receipt matching these terms.
+Approved stamp moment (unix seconds): see settlement panel.</textarea>
+  <p>Payment identifier (from the payment record; for an EIP-3009
+  payment, its nonce):</p>
+  <input type="text" id="payid" value="near-demo-payment-0001">
+  <p>Amount (testnet NEAR, simulated in this page):
+  <input type="number" id="amount" value="1" min="0" step="0.1" style="width:8rem"></p>
+  <button id="agreeBtn">Agree terms: compute the fingerprint</button>
+  <p>payload_digest (SHA-256 of the exact terms bytes, base64url):
+  <span class="mono" id="payloadDigest">not computed yet</span></p>
+</div>
+
+<div class="panel step" id="step2">
+  <h2>Step 2. Open the settlement</h2>
+  <p>Opening records the payload_digest and the payment identifier,
+  computes the pair_digest that binds them, locks the funds, and fixes
+  the approval window. In this demo the approval window is a one second
+  window at an agreed moment, because a POPCORN receipt's witnessed
+  interval is that moment plus and minus the node's published clock
+  accuracy radius of 10 seconds, and the interval must cover the
+  window.</p>
+  <button id="openBtn">Open settlement</button>
+  <table>
+    <tr><th>pair_digest</th><td class="mono" id="pairDigest">...</td></tr>
+    <tr><th>Approval window (unix seconds)</th><td class="mono" id="windowOut">...</td></tr>
+    <tr><th>State</th><td id="stateOut">not funded</td></tr>
+    <tr><th>Contract balance (simulated)</th><td id="balOut">0 testnet NEAR</td></tr>
+  </table>
+  <p>pair_digest byte form: SHA-256 over the payment identifier bytes,
+  one ":" byte, then the payload_digest bytes, written in base64url.
+  That is the published construction SHA-256(payment_identifier :
+  payload_digest): the two values as text joined by a single colon, no
+  spaces. The form is settled, verified against the worked example in
+  issue #37 of the POPCORN repository.</p>
+</div>
+
+<div class="panel step" id="step3">
+  <h2>Step 3. Get the witness receipt</h2>
+  <p class="sim">SIMULATED RECEIPT. The receipt below is produced by a
+  stand-in in this page, stamped at the agreed approval moment, in the
+  live node's format. No stamp was requested from the live node for
+  this in-page run: a real stamp is a paid call ($0.001) and is made
+  only with the owner's authorization for that stamp. One real stamp
+  was obtained, with that authorization, for the on-chain demo-2
+  settlement recorded in TESTNET-RUN.md. In production the payer presents
+  the pair_digest to POPCORN, POPCORN stamps it in a witnessed interval,
+  and anyone checks the signed receipt against the published keys with
+  the checker script in this repository.</p>
+  <button id="receiptBtn">Get witness receipt (stand-in)</button>
+  <pre class="mono" id="receiptOut">no receipt yet</pre>
+</div>
+
+<div class="panel step" id="step4">
+  <h2>Step 4. Release</h2>
+  <p>The settlement presents the receipt. Release happens only if the
+  receipt's stamped digest equals the pair_digest AND its witnessed
+  interval covers the approval window.</p>
+  <button id="releaseBtn">Release</button>
+  <p id="releaseOut">not attempted</p>
+</div>
+
+<div class="panel step" id="step5">
+  <h2>Step 5. The negative pass: change one character</h2>
+  <p>Go back to the terms box in Step 1 and change one character. Then
+  press the button below. A new settlement is computed from the changed
+  terms, and the receipt from Step 3 is presented against it.</p>
+  <button id="negBtn">Recompute from the changed terms and present the Step 3 receipt</button>
+  <p id="negOut">not attempted</p>
+</div>
+
+<div class="panel">
+  <h2>Check a real receipt, in this browser</h2>
+  <p>Below is a real production sample receipt bundled in the POPCORN
+  repository (fixtures/receipt-001.production.json in this repo). Its
+  signature is verified here with WebCrypto against the witness key
+  published in the node's JWKS, the same check the checker script runs
+  in a terminal. The stamped digest of this receipt is the fingerprint
+  of a schedule payload from the POPCORN examples; it is shown so you
+  can watch a real signature verify, not as part of the settlement
+  above.</p>
+  <button id="verifyRealBtn">Verify the real receipt's signature</button>
+  <pre class="mono" id="realOut">not verified yet</pre>
+</div>
+
+<h2>What a receipt proves, and what it does not</h2>
+<p>A POPCORN receipt witnesses only that the node received a fingerprint
+within the stated interval, under a published key. It does not prove
+agreement timing, authorship, competence, completion, identity,
+permission, delivery, or execution. Verification depends on accepting
+the node's key and clock. A receipt is evidence, never permission. The
+witness never books anyone, never handles the parties' payments beyond
+the witnessed stamp, and holds no keys from anyone. Agents bring their
+own keys and check the receipt themselves.</p>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const enc = new TextEncoder();
+
+function b64url(bytes) {
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+async function sha256B64url(bytes) {
+  const h = await crypto.subtle.digest("SHA-256", bytes);
+  return b64url(new Uint8Array(h));
+}
+const iso = (unix) => new Date(unix * 1000).toISOString();
+
+let settlement = null;   // the in-page run of the contract's rules
+let firstReceipt = null; // receipt from step 3, reused in the negative pass
+
+// The contract's release rules, mirrored from contract/src/lib.rs:
+// refuse unless stamped digest equals pair_digest AND the witnessed
+// interval covers the approval window.
+function contractRelease(st, receipt) {
+  if (!st || st.status !== "Open") return { ok: false, why: "settlement is not open" };
+  if (receipt.stamped_digest !== st.pair_digest)
+    return { ok: false, why: "refused: receipt stamped digest does not equal the pair_digest" };
+  if (!(receipt.interval_earliest <= st.approval_opens_at && receipt.interval_latest >= st.approval_closes_at))
+    return { ok: false, why: "refused: receipt witnessed interval does not cover the approval window" };
+  st.status = "Released";
+  st.receipt_id = receipt.receipt_id;
+  st.balance = 0;
+  return { ok: true, why: "released to Agent B on receipt " + receipt.receipt_id };
+}
+
+async function computePair() {
+  const termsBytes = enc.encode($("terms").value);
+  const payloadDigest = await sha256B64url(termsBytes);
+  const pairDigest = await sha256B64url(enc.encode($("payid").value + ":" + payloadDigest));
+  return { payloadDigest, pairDigest, nbytes: termsBytes.length };
+}
+
+$("agreeBtn").onclick = async () => {
+  const { payloadDigest, nbytes } = await computePair();
+  $("payloadDigest").textContent = payloadDigest + "  (over " + nbytes + " terms bytes)";
+  $("step2").classList.add("active");
+};
+
+$("openBtn").onclick = async () => {
+  const { payloadDigest, pairDigest } = await computePair();
+  $("payloadDigest").textContent = payloadDigest;
+  const moment = Math.floor(Date.now() / 1000) + 20; // agreed stamp moment
+  settlement = {
+    payload_digest: payloadDigest,
+    payment_identifier: $("payid").value,
+    pair_digest: pairDigest,
+    approval_opens_at: moment,
+    approval_closes_at: moment + 1,
+    amount: Number($("amount").value),
+    balance: Number($("amount").value),
+    status: "Open",
+    receipt_id: null,
+  };
+  $("pairDigest").textContent = pairDigest;
+  $("windowOut").textContent =
+    settlement.approval_opens_at + " .. " + settlement.approval_closes_at +
+    "  (" + iso(settlement.approval_opens_at) + ")";
+  $("stateOut").textContent = "Open, funds locked";
+  $("balOut").textContent = settlement.balance + " testnet NEAR";
+  $("step3").classList.add("active");
+};
+
+$("receiptBtn").onclick = () => {
+  if (!settlement) { $("receiptOut").textContent = "open the settlement first"; return; }
+  const m = settlement.approval_opens_at;
+  firstReceipt = {
+    receipt_id: "pwr_SIMULATED_stand_in",
+    node_id: "stand-in in this page (live node: 767-2676.com)",
+    stamped_digest: settlement.pair_digest,
+    witnessed_at: iso(m),
+    interval_earliest: m - 10,
+    interval_latest: m + 10,
+    witness_window_utc: { earliest: iso(m - 10), latest: iso(m + 10) },
+    note: "SIMULATED. Not signed by POPCORN. A real stamp is a paid call; one was made for the on-chain demo-2 settlement, not for this in-page run.",
+  };
+  $("receiptOut").textContent = JSON.stringify(firstReceipt, null, 2);
+  $("step4").classList.add("active");
+};
+
+$("releaseBtn").onclick = () => {
+  if (!settlement || !firstReceipt) { $("releaseOut").textContent = "open the settlement and get the receipt first"; return; }
+  const r = contractRelease(settlement, firstReceipt);
+  if (r.ok) {
+    $("releaseOut").innerHTML = "<span class='ok'>RELEASED.</span> " + r.why +
+      ". Agent B receives " + $("amount").value + " testnet NEAR (simulated).";
+    $("stateOut").textContent = "Released on receipt " + settlement.receipt_id;
+    $("balOut").textContent = "0 testnet NEAR";
+    $("step5").classList.add("active");
+  } else {
+    $("releaseOut").innerHTML = "<span class='no'>REFUSED.</span> " + r.why + ". The funds do not move.";
+  }
+};
+
+$("negBtn").onclick = async () => {
+  if (!firstReceipt) { $("negOut").textContent = "do steps 1 to 4 first"; return; }
+  const { payloadDigest, pairDigest } = await computePair();
+  const changed = {
+    payload_digest: payloadDigest,
+    pair_digest: pairDigest,
+    approval_opens_at: settlement.approval_opens_at,
+    approval_closes_at: settlement.approval_closes_at,
+    status: "Open",
+    balance: Number($("amount").value),
+  };
+  const r = contractRelease(changed, firstReceipt);
+  $("negOut").innerHTML =
+    "Changed terms give payload_digest <span class='mono'>" + payloadDigest + "</span> and pair_digest " +
+    "<span class='mono'>" + pairDigest + "</span>. Presenting the Step 3 receipt, whose stamped digest is " +
+    "<span class='mono'>" + firstReceipt.stamped_digest + "</span>: " +
+    (r.ok ? "<span class='ok'>released</span> (the terms were not actually changed)"
+          : "<span class='no'>REFUSED.</span> " + r.why + ". The funds do not move.");
+};
+
+// Real production sample receipt 001 (fixtures/receipt-001.production.json).
+const REAL_JWS = "eyJhbGciOiJFUzI1NiIsImtpZCI6InBvcGNvcm4td2l0bmVzcy0yMDI2LTAxIiwidHlwIjoicG9wY29ybi13aXRuZXNzK2p3cyJ9.eyJyZWNlaXB0X2lkIjoicHdyXzI0YTE0MGUwNjUxYzY3Mzc1Y2RmYjM0YmMxYzM4YjQ3Iiwibm9kZV9pZCI6Ijc2Ny0yNjc2LmNvbSIsInByb3RvY29sX2lkIjoiUE9QQ09STi1XSVRORVNTLzEuMCIsInJlcXVlc3RfcmVjZWl2ZWRfYXRfdXRjIjoiMjAyNi0wOC0zMVQwNTowMjoxNS4xNjhaIiwid2l0bmVzc2VkX2F0X3V0YyI6IjIwMjYtMDgtMzFUMDU6MDI6MTYuMDA3WiIsInN0YXRlbWVudF9jcmVhdGVkX2F0X3V0YyI6IjIwMjYtMDgtMzFUMDU6MDI6MTYuMDA3WiIsInVuaXhfdGltZV9taWxsaXNlY29uZHMiOjE3ODgxNTI1MzYwMDcsImNsb2NrX2FjY3VyYWN5X3JhZGl1c19tcyI6MTAwMDAsIndpdG5lc3Nfd2luZG93X3V0YyI6eyJlYXJsaWVzdCI6IjIwMjYtMDgtMzFUMDU6MDI6MDYuMDA3WiIsImxhdGVzdCI6IjIwMjYtMDgtMzFUMDU6MDI6MjYuMDA3WiJ9LCJzZXJ2ZXJfcHJvY2Vzc2luZ19kdXJhdGlvbl9tcyI6ODM5LCJwb3N0X3dpdG5lc3NfcHJvY2Vzc2luZ19kdXJhdGlvbl9tcyI6MCwiY29tbWl0bWVudCI6eyJwYXlsb2FkX2RpZ2VzdCI6eyJhbGdvcml0aG0iOiJzaGEtMjU2IiwidmFsdWUiOiJVS3dkZ0tGcTRtNWExTW0wcU1TdWhJSlluSjhqZG1OZDAxdUZkSGFBRS1NIn0sIm5vbmNlIjoiVjFkWFYxZFhWMWRYVjFkWFYxZFhWMWRYVjFkWFYxZFhWMWRYVjFkWFYxYyIsInByZXZpb3VzX2F0dGVzdGF0aW9uX2RpZ2VzdCI6bnVsbH0sInBheW1lbnRfaWRlbnRpZmllciI6ImVpcDMwMDlfNDQ4OWNhMmU1Yzk2N2U5Y2YzZDE3NDJhOGU0YjNmNzE1M2YzYjExOTIxZTQzYWYwZTMxY2RjOWUzNTQxMDE2NSIsInBheW1lbnRfdHJhbnNhY3Rpb24iOiIweDhkZmNlMjcyYjIyMzE3OWFkYzNiNjgyNTZlYmYwM2EyNzcyMWZiN2I3MDhjMGU1MGY0Nzc1M2U2YzMzYmFiMGMiLCJldmlkZW5jZV9zY29wZSI6eyJ0eXBlIjoicGF5bG9hZF9jb21taXRtZW50X3dpdG5lc3MiLCJwYXlsb2FkX2Rpc2Nsb3NlZCI6ZmFsc2UsImNhbGxlcl9pZGVudGl0eV9wcm92ZW4iOmZhbHNlLCJyZWNpcGllbnRfZGVsaXZlcnlfcHJvdmVuIjpmYWxzZSwiYWN0aW9uX2V4ZWN1dGlvbl9wcm92ZW4iOmZhbHNlLCJub25jZV91bmlxdWVuZXNzX2VuZm9yY2VkIjpmYWxzZSwicmVwbGF5X3ByZXZlbnRlZCI6ZmFsc2UsImF1dGhvcml6YXRpb25fZ3JhbnRlZCI6ZmFsc2UsImV4dGVybmFsX2F0b21pY19jbG9ja19hbGlnbm1lbnRfcHJvdmVuIjpmYWxzZSwiY2xvY2tfYWNjdXJhY3lfaW5kZXBlbmRlbnRseV92ZXJpZmllZCI6ZmFsc2UsInBheWVyX2F1dGhvcml6YXRpb25fYm91bmRfdG9fY29tbWl0bWVudCI6ZmFsc2V9fQ.5zEWJNTTdoNLwgvSi_vFY8F-FvHlLjqnYuJEy4MvLZgsHQAJeABVqn7VkE3CCBpJ08a1bOJXwTmh9K6NGfXyng";
+const WITNESS_JWK = { kty: "EC", crv: "P-256", x: "bPF-sxkcKCem33P9aAiwuQZlQOaHJzUWc1FxEE6kNhs", y: "wQwlxsexe7-4J79qQmpuebyS4GmN0gqrPyN-XfpVAQA", kid: "popcorn-witness-2026-01" };
+
+function b64urlDecode(s) {
+  s = s.replaceAll("-", "+").replaceAll("_", "/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+$("verifyRealBtn").onclick = async () => {
+  const [h, p, s] = REAL_JWS.split(".");
+  const header = JSON.parse(new TextDecoder().decode(b64urlDecode(h)));
+  const payload = JSON.parse(new TextDecoder().decode(b64urlDecode(p)));
+  const key = await crypto.subtle.importKey("jwk", WITNESS_JWK, { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+  const valid = await crypto.subtle.verify(
+    { name: "ECDSA", hash: "SHA-256" }, key, b64urlDecode(s), enc.encode(h + "." + p));
+  $("realOut").textContent =
+    "key id: " + header.kid + "\n" +
+    "signature: " + (valid ? "VALID" : "INVALID") + "\n" +
+    "receipt_id: " + payload.receipt_id + "\n" +
+    "stamped digest: " + payload.commitment.payload_digest.value + "\n" +
+    "witnessed interval: " + payload.witness_window_utc.earliest + " .. " + payload.witness_window_utc.latest;
+};
+</script>
+</body>
+</html>
