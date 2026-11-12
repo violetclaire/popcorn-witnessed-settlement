@@ -1,0 +1,23 @@
+{
+  "keys": [
+    {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "wCMGy1SpeYgxbzNQNgndb_-qs03LRkMNNb5nZkLsYi8",
+      "y": "OJbr-FtHN2146BYAaMZZ3LgRI7kZVDbkvjepLZFctQY",
+      "use": "sig",
+      "alg": "ES256",
+      "kid": "popcorn-time-2026-01"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "bPF-sxkcKCem33P9aAiwuQZlQOaHJzUWc1FxEE6kNhs",
+      "y": "wQwlxsexe7-4J79qQmpuebyS4GmN0gqrPyN-XfpVAQA",
+      "use": "sig",
+      "alg": "ES256",
+      "kid": "popcorn-witness-2026-01",
+      "popcorn_protocol": "POPCORN-WITNESS/1.0"
+    }
+  ]
+}
